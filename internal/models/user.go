@@ -2,7 +2,6 @@ package models
 
 import "time"
 
-// User — модель пользователя
 type User struct {
 	ID           string    `json:"id"`
 	Email        string    `json:"email"`
@@ -12,7 +11,24 @@ type User struct {
 	PasswordHash string    `json:"-"`
 }
 
-// UserRepository — интерфейс для работы с пользователями
+type UserResponse struct {
+	ID        string    `json:"id"`
+	Email     string    `json:"email"`
+	Username  string    `json:"username"`
+	IsPremium bool      `json:"is_premium"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (u *User) ToResponse() UserResponse {
+	return UserResponse{
+		ID:        u.ID,
+		Email:     u.Email,
+		Username:  u.Username,
+		IsPremium: u.IsPremium,
+		CreatedAt: u.CreatedAt,
+	}
+}
+
 type UserRepository interface {
 	Create(user *User) error
 	FindByEmail(email string) (*User, error)
