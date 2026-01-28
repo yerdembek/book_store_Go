@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	clientOptions := options.Client().ApplyURI("mongodb://admin:password@localhost:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://admin:password@localhost:27017/bookstore?authSource=admin")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
