@@ -82,5 +82,8 @@ func (h *ReaderHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Disposition", "inline; filename=book.pdf")
+	w.Header().Set("Content-Type", "application/pdf")
+
 	http.ServeFile(w, r, book.FilePath)
 }
