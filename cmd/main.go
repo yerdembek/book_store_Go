@@ -2,6 +2,7 @@ package main
 
 import (
 	"book_store_Go/internal/auth"
+	"book_store_Go/internal/books"
 	"book_store_Go/internal/repository"
 	"context"
 	"log"
@@ -44,14 +45,17 @@ func main() {
 	db := client.Database("bookstore")
 
 	userRepo := repository.NewUserRepository(db)
-
 	authHandler := auth.NewAuthHandler(userRepo)
+	catalogHandler := books.NewCatalogHandler(db)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/register", authHandler.HandleRegister).Methods("POST")
 	r.HandleFunc("/login", authHandler.HandleLogin).Methods("POST")
 	r.HandleFunc("/users/me", authHandler.HandleGetMe).Methods("GET")
 	r.HandleFunc("/users/{id}", authHandler.HandleGetUserByID).Methods("GET")
+
+	r.HandleFunc("/books", catalogHandler.GetBooks).Methods("GET")
+	r.HandleFunc("/books", catalogHandler.CreateBook).Methods("POST")
 
 	log.Println("Server running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
