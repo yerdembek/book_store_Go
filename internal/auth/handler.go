@@ -37,14 +37,14 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := &models.User{
-		ID:           "mock-" + req.Email,
+		ID:           req.Email,
 		Email:        req.Email,
 		Username:     req.Username,
 		IsPremium:    false,
 		CreatedAt:    time.Now(),
 		PasswordHash: string(passwordHash),
 	}
-	
+
 	if err := h.userRepo.Create(user); err != nil {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
