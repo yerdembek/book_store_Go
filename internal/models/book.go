@@ -10,4 +10,5 @@ type Book struct {
 	ImageURL    string             `bson:"image_url" json:"image_url"`
 	Price       float64            `bson:"price" json:"price"`
 	IsPremium   bool               `bson:"is_premium" json:"is_premium"`
+	FilePath    string             `bson:"file_path" json:"-"`
 }
