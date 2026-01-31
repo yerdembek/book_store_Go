@@ -6,15 +6,26 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
-	clientOptions := options.Client().ApplyURI("mongodb+srv://dreamTeam:beknur2007@cluster0.izobqen.mongodb.net/?appName=Cluster0")
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+
+	mongoURI := os.Getenv("MONGO_URI")
+	if mongoURI == "" {
+		log.Fatal("MONGO_URI is not set")
+	}
+
+	clientOptions := options.Client().ApplyURI(mongoURI)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -26,7 +37,7 @@ func main() {
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal("Connection failed:", err)
+		log.Fatal(err)
 	}
 	log.Println("Connected to MongoDB!")
 
@@ -42,6 +53,6 @@ func main() {
 	r.HandleFunc("/users/me", authHandler.HandleGetMe).Methods("GET")
 	r.HandleFunc("/users/{id}", authHandler.HandleGetUserByID).Methods("GET")
 
-	log.Println(" Server running on http://localhost:8080")
+	log.Println("Server running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
