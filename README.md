@@ -1,107 +1,114 @@
-Book Store API
+#  Book Store API
 
-This project is a simple backend API for an online book store written in Go.
-It was created as a learning project to practice backend development, working with databases, and authentication.
+## Book Store API Overview
 
-The API allows users to register, log in, view books, and read book files in PDF format.
+Book Store API is a simple backend application written in **Go** and powered by **MongoDB**.  
+This project was created as a learning backend project to understand how REST APIs work.
 
-About the Project
+It includes user authentication, book management, and PDF file handling.
 
-The main goal of this project is to understand how a backend service works:
+---
 
-how users are authenticated
+## Purpose of the Project
 
-how data is stored in a database
+The main goals of this project are:
 
-how files are uploaded and served
+- Learn backend development using Go
+- Practice working with MongoDB
+- Implement JWT authentication
+- Understand middleware usage
+- Handle file upload and file serving
 
-how middleware is used to protect routes
+---
 
-The project uses MongoDB as the database and JWT tokens for authentication.
+## Technologies Used
 
-Technologies Used
+- Go (Golang)
+- MongoDB
+- net/http
+- JWT (JSON Web Tokens)
+- bcrypt
+- Gorilla Mux
 
-Go (Golang)
+---
 
-MongoDB
+## Project Structure
 
-net/http
-
-JWT
-
-bcrypt (for password hashing)
-
-Gorilla Mux
-
-Project Structure
-book_store_Go/
+```text
+.
 ├── internal/
-│   ├── auth/        # User registration and login
-│   ├── books/       # Book catalog and PDF reader
-│   ├── middleware/  # JWT authentication middleware
-│   ├── models/      # Data models
-│   ├── repository/ # MongoDB logic
-│   ├── utils/       # Helper functions (JWT, email)
-│   └── mock/        # Mock repository for testing
-│
+│   ├── auth/          # Registration and login
+│   ├── books/         # Book catalog and PDF reader
+│   ├── middleware/    # JWT authentication middleware
+│   ├── models/        # Data models
+│   ├── repository/    # MongoDB repositories
+│   ├── utils/         # Helper utilities
+│   └── mock/          # Mock repository for testing
 ├── storage/
-│   └── books/       # Uploaded PDF files
-└── main.go
+│   └── books/         # Uploaded PDF files
+└── main.go            # Application entry point
+```
 
-Authentication
+---
 
-Users can create an account and log in.
-Passwords are stored securely using hashing.
-After logging in, the server returns a JWT token, which is used to access protected endpoints.
+## Authentication
 
-Books
+Users can register and log in using email and password.  
+Passwords are hashed before being stored in the database.
 
-The API allows:
+After successful login, the user receives a **JWT token**.  
+This token is required to access protected routes.
 
-viewing a list of books
+---
 
-adding new books to the database
+## Books
 
-Each book contains basic information such as title, author, description, and price.
+The API allows users to:
 
-Reading Books (PDF)
+- View all books
+- Add new books
 
-For each book, a PDF file can be uploaded.
-The file is stored on the server, and users can open the book directly in the browser.
+Each book contains information such as title, author, description, and price.
 
-This part of the project helped me understand how file uploads and downloads work in Go.
+---
 
-Middleware
+## PDF Reader
+
+### Upload PDF
+
+A PDF file can be uploaded for each book.  
+The file is stored on the server in the `storage/books` directory.
+
+### Read PDF
+
+Uploaded PDF files can be opened directly in the browser.
+
+---
+
+## Middleware
 
 JWT middleware is used to:
 
-check if the user is authenticated
+- Validate authentication tokens
+- Check token expiration
+- Extract user data from the token
 
-validate the token
+Only authorized users can access protected routes.
 
-extract user information from the token
+---
 
-This ensures that only authorized users can access certain endpoints.
+## User Roles
 
-User Roles
+The project includes basic user roles:
 
-The project includes several user roles:
+- user
+- book_premium
+- group_book_premium
+- admin
 
-user
+---
 
-book_premium
+## Environment Variables
 
-group_book_premium
-
-admin
-
-At the moment, roles are mainly stored and validated, but they can be extended for access control in the future.
-
-Environment Variables
-
-The project uses an environment variable for JWT:
-
+```env
 JWT_SECRET=your_secret_key
-
-
-If it is not set, a default value is used for development.
