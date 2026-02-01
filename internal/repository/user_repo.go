@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -24,7 +25,16 @@ func (r *UserRepository) Create(user *models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := r.collection.InsertOne(ctx, user)
+	count, err := r.collection.CountDocuments(ctx, bson.M{"email": user.Email})
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return errors.New("email already exists")
+	}
+
+	user.ID = primitive.NewObjectID()
+	_, err = r.collection.InsertOne(ctx, user)
 	return err
 }
 
@@ -40,6 +50,22 @@ func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 		}
 		return nil, err
 	}
+	return &user, nil
+}
 
+func (r *UserRepository) FindByID(id string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, errors.New("invalid id format")
+	}
+
+	var user models.User
+	err = r.collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
 	return &user, nil
 }
