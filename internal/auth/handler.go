@@ -1,13 +1,12 @@
 package auth
 
 import (
-	"time"
-
 	"book_store_Go/internal/models"
+	"book_store_Go/internal/utils"
 	"encoding/json"
 	"net/http"
+	"time"
 
-	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -30,29 +29,35 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
 
 	user := &models.User{
-		ID:           req.Email,
 		Email:        req.Email,
 		Username:     req.Username,
-		IsPremium:    false,
+		PasswordHash: string(hash),
+		Role:         models.RoleUser, // По умолчанию обычный юзер
 		CreatedAt:    time.Now(),
-		PasswordHash: string(passwordHash),
 	}
 
 	if err := h.userRepo.Create(user); err != nil {
-		http.Error(w, err.Error(), http.StatusConflict)
+		http.Error(w, "Error creating user: "+err.Error(), http.StatusConflict)
 		return
 	}
 
+	go utils.SendWelcomeEmail(user.Email, user.Username)
+
+	token, _ := utils.GenerateToken(user.ID.Hex(), user.Role)
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user.ToResponse())
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"token": token,
+		"user":  user.ToResponse(),
+	})
 }
 
 func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
@@ -65,59 +70,43 @@ func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Email == "" || req.Password == "" {
-		http.Error(w, "Email and password are required", http.StatusBadRequest)
-		return
-	}
-
 	user, err := h.userRepo.FindByEmail(req.Email)
 	if err != nil {
-		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
-		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	token, err := utils.GenerateToken(user.ID.Hex(), user.Role)
+	if err != nil {
+		http.Error(w, "Error generating token", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user.ToResponse())
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"token": token,
+		"user":  user.ToResponse(),
+	})
 }
 
 func (h *AuthHandler) HandleGetMe(w http.ResponseWriter, r *http.Request) {
-	email := r.Header.Get("X-User-Email")
-	if email == "" {
-		http.Error(w, "Missing X-User-Email header", http.StatusBadRequest)
+	// Мы достанем userID из контекста (туда его положит Middleware)
+	userID, ok := r.Context().Value("userID").(string)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	user, err := h.userRepo.FindByEmail(email)
+	user, err := h.userRepo.FindByID(userID)
 	if err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user.ToResponse())
-}
-
-func (h *AuthHandler) HandleGetUserByID(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-
-	if len(id) <= 5 || id[:5] != "mock-" {
-		http.Error(w, "Invalid user ID format", http.StatusBadRequest)
-		return
-	}
-	email := id[5:]
-
-	user, err := h.userRepo.FindByEmail(email)
-	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user.ToResponse())
 }
