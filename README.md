@@ -1,64 +1,114 @@
-# book_store_Go
-## Что изменилось и что добавил
- Hа данном этапе проект может выполнять простые запросы такие как:
-```bush
-POST /books     - Создать книгу
-GET /books      - Все книги  
-GET /books?author=Orwell  - Поиск по автору
-GET /books/1    - Книга по ID
-PUT /books/1    - Обновить
-DELETE /books/1 - Удалить
+#  Book Store API
+
+## Book Store API Overview
+
+Book Store API is a simple backend application written in **Go** and powered by **MongoDB**.  
+This project was created as a learning backend project to understand how REST APIs work.
+
+It includes user authentication, book management, and PDF file handling.
+
+---
+
+## Purpose of the Project
+
+The main goals of this project are:
+
+- Learn backend development using Go
+- Practice working with MongoDB
+- Implement JWT authentication
+- Understand middleware usage
+- Handle file upload and file serving
+
+---
+
+## Technologies Used
+
+- Go (Golang)
+- MongoDB
+- net/http
+- JWT (JSON Web Tokens)
+- bcrypt
+- Gorilla Mux
+
+---
+
+## Project Structure
+
+```text
+.
+├── internal/
+│   ├── auth/          # Registration and login
+│   ├── books/         # Book catalog and PDF reader
+│   ├── middleware/    # JWT authentication middleware
+│   ├── models/        # Data models
+│   ├── repository/    # MongoDB repositories
+│   ├── utils/         # Helper utilities
+│   └── mock/          # Mock repository for testing
+├── storage/
+│   └── books/         # Uploaded PDF files
+└── main.go            # Application entry point
 ```
 
-## Зависимости и библиотеки
-1. **Gin (github.com/gin-gonic/gin)**
-   
-```bush
-r.POST("/books", handlers.CreateBook)
-r.GET("/books", handlers.GetBooks)
-```
+---
 
-* Веб-фреймворк для REST API
+## Authentication
 
-* Быстрый роутинг (/books/:id)
+Users can register and log in using email and password.  
+Passwords are hashed before being stored in the database.
 
-* JSON парсинг (c.ShouldBindJSON)
+After successful login, the user receives a **JWT token**.  
+This token is required to access protected routes.
 
-* Middleware (CORS, логирование, rate limiting)
+---
 
-2. **GORM (gorm.io/gorm)**
+## Books
 
-```bush
-db.AutoMigrate(&models.Book{})
-db.Create(&book)
-db.Where("author LIKE ?", "%Orwell%").Find(&books)
-```
+The API allows users to:
 
-* ORM — превращает SQL в Go код
+- View all books
+- Add new books
 
-* Автоматические миграции таблиц
+Each book contains information such as title, author, description, and price.
 
-* CRUD операции без сырого SQL
+---
 
-* Поддержка отношений (книги ↔ авторы)
+## PDF Reader
 
-3. PostgreSQL драйвер (gorm.io/driver/postgres)
+### Upload PDF
 
-```bush
-dsn := "host=localhost user=postgres password=123AAss dbname=book_store_db"
-```
+A PDF file can be uploaded for each book.  
+The file is stored on the server in the `storage/books` directory.
 
-* Соединяет GORM с PostgreSQL
+### Read PDF
 
-* Парсит connection string
+Uploaded PDF files can be opened directly in the browser.
 
-* Connection pooling (много запросов = 1 подключение)
+---
 
-## Памятка для команды
+## Middleware
 
-1. go.sum не трогать он нужен что бы зависимости и библиотеки устанавливались корректно.
-2. Как обновить:
-```bush
-go get -u ./...                   # Обновить все
-go mod tidy                       # Удалить неиспользуемые
-```
+JWT middleware is used to:
+
+- Validate authentication tokens
+- Check token expiration
+- Extract user data from the token
+
+Only authorized users can access protected routes.
+
+---
+
+## User Roles
+
+The project includes basic user roles:
+
+- user
+- book_premium
+- group_book_premium
+- admin
+
+---
+
+## Environment Variables
+
+```env
+JWT_SECRET=your_secret_key
