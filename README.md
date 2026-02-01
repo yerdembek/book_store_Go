@@ -1,64 +1,107 @@
-# book_store_Go
-## Что изменилось и что добавил
- Hа данном этапе проект может выполнять простые запросы такие как:
-```bush
-POST /books     - Создать книгу
-GET /books      - Все книги  
-GET /books?author=Orwell  - Поиск по автору
-GET /books/1    - Книга по ID
-PUT /books/1    - Обновить
-DELETE /books/1 - Удалить
-```
+Book Store API
 
-## Зависимости и библиотеки
-1. **Gin (github.com/gin-gonic/gin)**
-   
-```bush
-r.POST("/books", handlers.CreateBook)
-r.GET("/books", handlers.GetBooks)
-```
+This project is a simple backend API for an online book store written in Go.
+It was created as a learning project to practice backend development, working with databases, and authentication.
 
-* Веб-фреймворк для REST API
+The API allows users to register, log in, view books, and read book files in PDF format.
 
-* Быстрый роутинг (/books/:id)
+About the Project
 
-* JSON парсинг (c.ShouldBindJSON)
+The main goal of this project is to understand how a backend service works:
 
-* Middleware (CORS, логирование, rate limiting)
+how users are authenticated
 
-2. **GORM (gorm.io/gorm)**
+how data is stored in a database
 
-```bush
-db.AutoMigrate(&models.Book{})
-db.Create(&book)
-db.Where("author LIKE ?", "%Orwell%").Find(&books)
-```
+how files are uploaded and served
 
-* ORM — превращает SQL в Go код
+how middleware is used to protect routes
 
-* Автоматические миграции таблиц
+The project uses MongoDB as the database and JWT tokens for authentication.
 
-* CRUD операции без сырого SQL
+Technologies Used
 
-* Поддержка отношений (книги ↔ авторы)
+Go (Golang)
 
-3. PostgreSQL драйвер (gorm.io/driver/postgres)
+MongoDB
 
-```bush
-dsn := "host=localhost user=postgres password=123AAss dbname=book_store_db"
-```
+net/http
 
-* Соединяет GORM с PostgreSQL
+JWT
 
-* Парсит connection string
+bcrypt (for password hashing)
 
-* Connection pooling (много запросов = 1 подключение)
+Gorilla Mux
 
-## Памятка для команды
+Project Structure
+book_store_Go/
+├── internal/
+│   ├── auth/        # User registration and login
+│   ├── books/       # Book catalog and PDF reader
+│   ├── middleware/  # JWT authentication middleware
+│   ├── models/      # Data models
+│   ├── repository/ # MongoDB logic
+│   ├── utils/       # Helper functions (JWT, email)
+│   └── mock/        # Mock repository for testing
+│
+├── storage/
+│   └── books/       # Uploaded PDF files
+└── main.go
 
-1. go.sum не трогать он нужен что бы зависимости и библиотеки устанавливались корректно.
-2. Как обновить:
-```bush
-go get -u ./...                   # Обновить все
-go mod tidy                       # Удалить неиспользуемые
-```
+Authentication
+
+Users can create an account and log in.
+Passwords are stored securely using hashing.
+After logging in, the server returns a JWT token, which is used to access protected endpoints.
+
+Books
+
+The API allows:
+
+viewing a list of books
+
+adding new books to the database
+
+Each book contains basic information such as title, author, description, and price.
+
+Reading Books (PDF)
+
+For each book, a PDF file can be uploaded.
+The file is stored on the server, and users can open the book directly in the browser.
+
+This part of the project helped me understand how file uploads and downloads work in Go.
+
+Middleware
+
+JWT middleware is used to:
+
+check if the user is authenticated
+
+validate the token
+
+extract user information from the token
+
+This ensures that only authorized users can access certain endpoints.
+
+User Roles
+
+The project includes several user roles:
+
+user
+
+book_premium
+
+group_book_premium
+
+admin
+
+At the moment, roles are mainly stored and validated, but they can be extended for access control in the future.
+
+Environment Variables
+
+The project uses an environment variable for JWT:
+
+JWT_SECRET=your_secret_key
+
+
+If it is not set, a default value is used for development.
