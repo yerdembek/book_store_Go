@@ -119,9 +119,18 @@ func (h *ProfileHandler) ChangePassword(w http.ResponseWriter, r *http.Request) 
 func (h *ProfileHandler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// TODO: implement delete account logic
+	userID, ok := r.Context().Value("userID").(string)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	if err := h.userRepo.DeleteByID(userID); err != nil {
+		http.Error(w, "Failed to delete account", http.StatusInternalServerError)
+		return
+	}
 
 	json.NewEncoder(w).Encode(map[string]string{
-		"message": "delete account - not implemented yet",
+		"message": "Account deleted successfully",
 	})
 }
