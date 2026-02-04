@@ -70,6 +70,8 @@ func main() {
 
 	r.HandleFunc("/books/{id}/upload", readerHandler.UploadPDF).Methods("POST")
 	r.HandleFunc("/books/{id}/download", readerHandler.DownloadPDF).Methods("GET")
+	//
+	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 
 	// Пример будущего функционала:
 	// api.HandleFunc("/books/premium", bookHandler.GetPremiumBooks).Methods("GET")
