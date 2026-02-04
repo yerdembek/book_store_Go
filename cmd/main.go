@@ -7,6 +7,8 @@ import (
 
 	"book_store_Go/internal/books"
 	"book_store_Go/internal/repository"
+
+	"book_store_Go/internal/profile"
 	"context"
 	"log"
 	"net/http"
@@ -47,6 +49,7 @@ func main() {
 	authHandler := auth.NewAuthHandler(userRepo)
 	catalogHandler := books.NewCatalogHandler(db)
 	readerHandler := books.NewReaderHandler(db)
+	profileHandler := profile.NewProfileHandler(userRepo)
 
 	r := mux.NewRouter()
 
@@ -57,6 +60,8 @@ func main() {
 	api.Use(middleware.AuthMiddleware)
 
 	api.HandleFunc("/me", authHandler.HandleGetMe).Methods("GET")
+	//
+	api.HandleFunc("/profile", profileHandler.UpdateProfile).Methods("PUT")
 
 	r.HandleFunc("/books", catalogHandler.GetBooks).Methods("GET")
 	r.HandleFunc("/books", catalogHandler.CreateBook).Methods("POST")
