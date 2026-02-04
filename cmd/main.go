@@ -62,6 +62,7 @@ func main() {
 	api.HandleFunc("/me", authHandler.HandleGetMe).Methods("GET")
 	//
 	api.HandleFunc("/profile", profileHandler.UpdateProfile).Methods("PUT")
+	api.HandleFunc("/profile/password", profileHandler.ChangePassword).Methods("PUT")
 
 	r.HandleFunc("/books", catalogHandler.GetBooks).Methods("GET")
 	r.HandleFunc("/books", catalogHandler.CreateBook).Methods("POST")
