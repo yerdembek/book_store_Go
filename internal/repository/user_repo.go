@@ -69,3 +69,55 @@ func (r *UserRepository) FindByID(id string) (*models.User, error) {
 	}
 	return &user, nil
 }
+
+// UpdateUsername updates the username of an existing user.
+func (r *UserRepository) UpdateUsername(id string, username string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	_, err = r.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": objID},
+		bson.M{"$set": bson.M{"username": username}},
+	)
+
+	return err
+}
+
+// UpdatePassword updates the password hash of the user.
+func (r *UserRepository) UpdatePassword(id string, passwordHash string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	_, err = r.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": objID},
+		bson.M{"$set": bson.M{"password_hash": passwordHash}},
+	)
+
+	return err
+}
+
+// DeleteByID removes a user account from the database by ID.
+func (r *UserRepository) DeleteByID(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	_, err = r.collection.DeleteOne(ctx, bson.M{"_id": objID})
+	return err
+}
