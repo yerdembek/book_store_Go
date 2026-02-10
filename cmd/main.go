@@ -1,6 +1,5 @@
 package main
 
-//test
 import (
 	"book_store_Go/internal/auth"
 	"book_store_Go/internal/middleware"
@@ -88,8 +87,12 @@ func main() {
 	r.HandleFunc("/books/{id}/download/pdf", pdfHandler.DownloadPDF).Methods("GET")
 	r.HandleFunc("/books/{id}/download/epub", epubHandler.DownloadEPUB).Methods("GET")
 
+
 	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 
+
+	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
+	r.HandleFunc("/books/{id}", catalogHandler.DeleteBook).Methods("DELETE")
 	// Пример будущего функционала:
 	// api.HandleFunc("/books/premium", bookHandler.GetPremiumBooks).Methods("GET")
 

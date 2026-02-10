@@ -72,3 +72,28 @@ func (h *CatalogHandler) GetBookByID(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(book)
 }
+
+func (h *CatalogHandler) DeleteBook(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		http.Error(w, "Неверный формат ID книги", http.StatusBadRequest)
+		return
+	}
+
+	// ИСПОЛЬЗУЙТЕ h.Collection вместо h.db.Collection("books")
+	result, err := h.Collection.DeleteOne(r.Context(), bson.M{"_id": objID})
+	if err != nil {
+		http.Error(w, "Ошибка при удалении книги из базы данных", http.StatusInternalServerError)
+		return
+	}
+
+	if result.DeletedCount == 0 {
+		http.Error(w, "Книга с таким ID не найдена", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
