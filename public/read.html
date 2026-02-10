@@ -37,14 +37,12 @@
 <main class="reader-content">
     <div id="loader">
         <div class="spinner-border text-light" role="status"></div>
-        <div class="mt-2 text-white-50 small">Загрузка Demo PDF...</div>
+        <div class="mt-2 text-white-50 small">Загрузка книги...</div>
     </div>
 
-    <div id="pdf-container">
-        <canvas id="the-canvas"></canvas>
-    </div>
+    <div id="pdf-container" style="display:none;"><canvas id="the-canvas"></canvas></div>
+    <div id="epub-viewer" style="display:none;"></div>
 </main>
-
 <script src="reader.js"></script>
 </body>
 </html>
