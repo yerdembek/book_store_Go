@@ -48,14 +48,14 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	authHandler := auth.NewAuthHandler(userRepo)
 	catalogHandler := books.NewCatalogHandler(db)
-	readerHandler := books.NewReaderHandler(db)
+	readerHandler := books.NewReaderHandler(db, userRepo)
 	profileHandler := profile.NewProfileHandler(userRepo)
 
 	r := mux.NewRouter()
 
 	r.HandleFunc("/api/register", authHandler.HandleRegister).Methods("POST")
 	r.HandleFunc("/api/login", authHandler.HandleLogin).Methods("POST")
- 
+
 	api := r.PathPrefix("/api").Subrouter()
 	api.Use(middleware.AuthMiddleware)
 

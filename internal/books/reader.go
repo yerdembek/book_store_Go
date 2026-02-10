@@ -1,6 +1,7 @@
 package books
 
 import (
+	"book_store_Go/internal/models"
 	"context"
 	"fmt"
 	"io"
@@ -17,11 +18,13 @@ import (
 
 type ReaderHandler struct {
 	Collection *mongo.Collection
+	UserRepo   models.UserRepository
 }
 
-func NewReaderHandler(db *mongo.Database) *ReaderHandler {
+func NewReaderHandler(db *mongo.Database, userRepo models.UserRepository) *ReaderHandler {
 	return &ReaderHandler{
 		Collection: db.Collection("books"),
+		UserRepo:   userRepo,
 	}
 }
 
@@ -70,20 +73,35 @@ func (h *ReaderHandler) UploadPDF(w http.ResponseWriter, r *http.Request) {
 
 func (h *ReaderHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	bookID, _ := primitive.ObjectIDFromHex(vars["id"])
-
-	var book struct {
-		FilePath string `bson:"file_path"`
+	bookID, err := primitive.ObjectIDFromHex(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid book ID", http.StatusBadRequest)
+		return
 	}
-	err := h.Collection.FindOne(context.TODO(), bson.M{"_id": bookID}).Decode(&book)
 
+	var book models.Book
+	err = h.Collection.FindOne(context.TODO(), bson.M{"_id": bookID}).Decode(&book)
 	if err != nil || book.FilePath == "" {
 		http.Error(w, "File not found for this book", http.StatusNotFound)
 		return
 	}
 
+	// Проверка подписки
+	if book.IsPremium {
+		userID, ok := r.Context().Value("userID").(string)
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		user, err := h.UserRepo.FindByID(userID)
+		if err != nil || !user.CanReadPremium() {
+			http.Error(w, "Premium subscription required", http.StatusForbidden)
+			return
+		}
+	}
+
 	w.Header().Set("Content-Disposition", "inline; filename=book.pdf")
 	w.Header().Set("Content-Type", "application/pdf")
-
 	http.ServeFile(w, r, book.FilePath)
 }
