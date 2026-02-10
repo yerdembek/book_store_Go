@@ -6,6 +6,7 @@ import (
 	"book_store_Go/internal/middleware"
 
 	"book_store_Go/internal/books"
+	"book_store_Go/internal/chat"
 	"book_store_Go/internal/repository"
 
 	"book_store_Go/internal/profile"
@@ -55,7 +56,13 @@ func main() {
 
 	profileHandler := profile.NewProfileHandler(userRepo)
 
+	hub := chat.NewHub()
+	go hub.Run()
+	chatHandler := chat.NewHandler(hub, db)
+
 	r := mux.NewRouter()
+
+	r.HandleFunc("/ws", chatHandler.ServeWS)
 
 	r.HandleFunc("/api/register", authHandler.HandleRegister).Methods("POST")
 	r.HandleFunc("/api/login", authHandler.HandleLogin).Methods("POST")
