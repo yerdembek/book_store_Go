@@ -47,6 +47,7 @@ func main() {
 	catalogHandler := books.NewCatalogHandler(db)
 	readerHandler := books.NewReaderHandler(db)
 	epubHandler := books.NewEPUBReaderHandler(db)
+	pdfHandler := books.NewPDFReaderHandler(db)
 
 	r := mux.NewRouter()
 
@@ -62,6 +63,7 @@ func main() {
 	r.HandleFunc("/books", catalogHandler.CreateBook).Methods("POST")
 
 	r.HandleFunc("/books/{id}/upload/file", readerHandler.UploadBookFile).Methods("POST")
+	r.HandleFunc("/books/{id}/download/pdf", pdfHandler.DownloadPDF).Methods("GET")
 	r.HandleFunc("/books/{id}/download/epub", epubHandler.DownloadEPUB).Methods("GET")
 
 	// Пример будущего функционала:

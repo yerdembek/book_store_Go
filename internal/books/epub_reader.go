@@ -11,17 +11,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type EPUBReaderHandler struct {
-	Collection *mongo.Collection
-}
-
-func NewEPUBReaderHandler(db *mongo.Database) *EPUBReaderHandler {
-	return &EPUBReaderHandler{
+func NewEPUBReaderHandler(db *mongo.Database) *ReaderHandler {
+	return &ReaderHandler{
 		Collection: db.Collection("books"),
 	}
 }
 
-func (h *EPUBReaderHandler) DownloadEPUB(w http.ResponseWriter, r *http.Request) {
+func (h *ReaderHandler) DownloadEPUB(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	bookID, err := primitive.ObjectIDFromHex(vars["id"])
 	if err != nil {

@@ -7,7 +7,14 @@ import (
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
+
+func NewPDFReaderHandler(db *mongo.Database) *ReaderHandler {
+	return &ReaderHandler{
+		Collection: db.Collection("books"),
+	}
+}
 
 func (h *ReaderHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
