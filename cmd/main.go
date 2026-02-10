@@ -1,6 +1,5 @@
 package main
 
-//test
 import (
 	"book_store_Go/internal/auth"
 	"book_store_Go/internal/middleware"
@@ -55,7 +54,6 @@ func main() {
 
 	profileHandler := profile.NewProfileHandler(userRepo)
 
-
 	r := mux.NewRouter()
 
 	r.HandleFunc("/api/register", authHandler.HandleRegister).Methods("POST")
@@ -66,8 +64,6 @@ func main() {
 
 	api.HandleFunc("/me", authHandler.HandleGetMe).Methods("GET")
 
-
-	
 	api.HandleFunc("/profile", profileHandler.UpdateProfile).Methods("PUT")
 	api.HandleFunc("/profile/password", profileHandler.ChangePassword).Methods("PUT")
 	api.HandleFunc("/profile", profileHandler.DeleteAccount).Methods("DELETE")
@@ -78,9 +74,9 @@ func main() {
 	r.HandleFunc("/books/{id}/upload/file", readerHandler.UploadBookFile).Methods("POST")
 	r.HandleFunc("/books/{id}/download/pdf", pdfHandler.DownloadPDF).Methods("GET")
 	r.HandleFunc("/books/{id}/download/epub", epubHandler.DownloadEPUB).Methods("GET")
-	
-	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 
+	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
+	r.HandleFunc("/books/{id}", catalogHandler.DeleteBook).Methods("DELETE")
 	// Пример будущего функционала:
 	// api.HandleFunc("/books/premium", bookHandler.GetPremiumBooks).Methods("GET")
 
