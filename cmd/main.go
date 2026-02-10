@@ -1,11 +1,14 @@
 package main
 
+//test
 import (
 	"book_store_Go/internal/auth"
 	"book_store_Go/internal/middleware"
 
 	"book_store_Go/internal/books"
 	"book_store_Go/internal/repository"
+
+	"book_store_Go/internal/profile"
 	"context"
 	"log"
 	"net/http"
@@ -46,8 +49,12 @@ func main() {
 	authHandler := auth.NewAuthHandler(userRepo)
 	catalogHandler := books.NewCatalogHandler(db)
 	readerHandler := books.NewReaderHandler(db)
+
 	epubHandler := books.NewEPUBReaderHandler(db)
 	pdfHandler := books.NewPDFReaderHandler(db)
+
+	profileHandler := profile.NewProfileHandler(userRepo)
+
 
 	r := mux.NewRouter()
 
@@ -59,15 +66,25 @@ func main() {
 
 	api.HandleFunc("/me", authHandler.HandleGetMe).Methods("GET")
 
+
+	
+	api.HandleFunc("/profile", profileHandler.UpdateProfile).Methods("PUT")
+	api.HandleFunc("/profile/password", profileHandler.ChangePassword).Methods("PUT")
+	api.HandleFunc("/profile", profileHandler.DeleteAccount).Methods("DELETE")
+
 	r.HandleFunc("/books", catalogHandler.GetBooks).Methods("GET")
 	r.HandleFunc("/books", catalogHandler.CreateBook).Methods("POST")
 
 	r.HandleFunc("/books/{id}/upload/file", readerHandler.UploadBookFile).Methods("POST")
 	r.HandleFunc("/books/{id}/download/pdf", pdfHandler.DownloadPDF).Methods("GET")
 	r.HandleFunc("/books/{id}/download/epub", epubHandler.DownloadEPUB).Methods("GET")
+	
+	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 
 	// Пример будущего функционала:
 	// api.HandleFunc("/books/premium", bookHandler.GetPremiumBooks).Methods("GET")
+
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public")))
 
 	port := os.Getenv("PORT")
 	if port == "" {

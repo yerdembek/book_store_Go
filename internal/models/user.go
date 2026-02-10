@@ -1,8 +1,9 @@
 package models
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
@@ -44,4 +45,9 @@ type UserRepository interface {
 	Create(user *User) error
 	FindByEmail(email string) (*User, error)
 	FindByID(id string) (*User, error) // Добавим поиск по ID
+
+	// Extended to support profile management (update profile, change password, delete account).
+	UpdateUsername(id string, username string) error
+	DeleteByID(id string) error
+	UpdatePassword(id string, passwordHash string) error
 }
