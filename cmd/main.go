@@ -6,6 +6,7 @@ import (
 	"book_store_Go/internal/middleware"
 
 	"book_store_Go/internal/books"
+	"book_store_Go/internal/chat"
 	"book_store_Go/internal/repository"
 
 	"book_store_Go/internal/profile"
@@ -58,8 +59,13 @@ func main() {
 	profileHandler := profile.NewProfileHandler(userRepo)
 	subscriptionHandler := subscription.NewSubscriptionHandler(userRepo)
 
+	hub := chat.NewHub()
+	go hub.Run()
+	chatHandler := chat.NewHandler(hub, db)
 
 	r := mux.NewRouter()
+
+	r.HandleFunc("/ws", chatHandler.ServeWS)
 
 	r.HandleFunc("/api/register", authHandler.HandleRegister).Methods("POST")
 	r.HandleFunc("/api/login", authHandler.HandleLogin).Methods("POST")
@@ -69,8 +75,6 @@ func main() {
 
 	api.HandleFunc("/me", authHandler.HandleGetMe).Methods("GET")
 
-
-	
 	api.HandleFunc("/profile", profileHandler.UpdateProfile).Methods("PUT")
 	api.HandleFunc("/profile/password", profileHandler.ChangePassword).Methods("PUT")
 	api.HandleFunc("/profile", profileHandler.DeleteAccount).Methods("DELETE")
@@ -83,7 +87,7 @@ func main() {
 	r.HandleFunc("/books/{id}/upload/file", readerHandler.UploadBookFile).Methods("POST")
 	r.HandleFunc("/books/{id}/download/pdf", pdfHandler.DownloadPDF).Methods("GET")
 	r.HandleFunc("/books/{id}/download/epub", epubHandler.DownloadEPUB).Methods("GET")
-	
+
 	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 
 	// Пример будущего функционала:
