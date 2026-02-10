@@ -7,10 +7,15 @@ import (
 )
 
 const (
-	RoleUser             = "user"
-	RoleBookPremium      = "book_premium"
-	RoleGroupBookPremium = "group_book_premium"
-	RoleAdmin            = "admin"
+	RoleUser  = "user"
+	RoleAdmin = "admin"
+)
+
+// Subscriptions types
+const (
+	SubNone    = "none"
+	SubReader  = "reader"
+	SubCreator = "creator"
 )
 
 type User struct {
@@ -20,6 +25,9 @@ type User struct {
 	PasswordHash string             `json:"-" bson:"password_hash"`
 	Role         string             `json:"role" bson:"role"`
 	CreatedAt    time.Time          `json:"created_at" bson:"created_at"`
+	// Subscription info
+	Subscription string    `json:"subscription" bson:"subscription"`
+	SubExpiresAt time.Time `json:"sub_expires_at" bson:"sub_expires_at"`
 }
 
 type UserResponse struct {
@@ -50,4 +58,35 @@ type UserRepository interface {
 	UpdateUsername(id string, username string) error
 	DeleteByID(id string) error
 	UpdatePassword(id string, passwordHash string) error
+
+	// Subscription management
+	UpdateSubscription(id string, subscription string, expiresAt time.Time) error
+}
+
+// Subscription Helper-methods
+// checks whether the subscription is still valid.
+func (u *User) IsSubActive() bool {
+	return time.Now().Before(u.SubExpiresAt)
+}
+
+// checks access to premium books.
+func (u *User) CanReadPremium() bool {
+	if u.Role == RoleAdmin {
+		return true
+	}
+	if !u.IsSubActive() {
+		return false
+	}
+	return u.Subscription == SubReader || u.Subscription == SubCreator
+}
+
+// checks access to creator-only features.
+func (u *User) CanCreateChats() bool {
+	if u.Role == RoleAdmin {
+		return true
+	}
+	if !u.IsSubActive() {
+		return false
+	}
+	return u.Subscription == SubCreator
 }
