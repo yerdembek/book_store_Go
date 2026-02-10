@@ -55,7 +55,7 @@ func main() {
 
 	r.HandleFunc("/api/register", authHandler.HandleRegister).Methods("POST")
 	r.HandleFunc("/api/login", authHandler.HandleLogin).Methods("POST")
-
+ 
 	api := r.PathPrefix("/api").Subrouter()
 	api.Use(middleware.AuthMiddleware)
 

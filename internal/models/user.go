@@ -13,6 +13,12 @@ const (
 	RoleAdmin            = "admin"
 )
 
+const (
+	SubNone    = "none"
+	SubReader  = "reader"
+	SubCreator = "creator"
+)
+
 type User struct {
 	ID           primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Email        string             `json:"email" bson:"email"`
@@ -20,6 +26,8 @@ type User struct {
 	PasswordHash string             `json:"-" bson:"password_hash"`
 	Role         string             `json:"role" bson:"role"`
 	CreatedAt    time.Time          `json:"created_at" bson:"created_at"`
+	Subscription string             `json:"subscription" bson:"subscription"`
+	SubExpiresAt time.Time          `json:"sub_expires_at" bson:"sub_expires_at"`
 }
 
 type UserResponse struct {
@@ -40,6 +48,24 @@ func (u *User) ToResponse() UserResponse {
 	}
 }
 
+func (u *User) IsSubActive() bool {
+	return time.Now().Before(u.SubExpiresAt)
+}
+
+func (u *User) CanReadPremium() bool {
+	if !u.IsSubActive() {
+		return false
+	}
+	return u.Subscription == SubReader || u.Subscription == SubCreator
+}
+
+func (u *User) CanCreateChats() bool {
+	if !u.IsSubActive() {
+		return false
+	}
+	return u.Subscription == SubCreator
+}
+
 // Интерфейс репозитория (немного обновим методы)
 type UserRepository interface {
 	Create(user *User) error
@@ -50,4 +76,6 @@ type UserRepository interface {
 	UpdateUsername(id string, username string) error
 	DeleteByID(id string) error
 	UpdatePassword(id string, passwordHash string) error
+
+	UpdateSubscription(id string, subscription string, expiresAt time.Time) error
 }
