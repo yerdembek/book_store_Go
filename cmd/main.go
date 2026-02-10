@@ -1,11 +1,14 @@
 package main
 
+//test
 import (
 	"book_store_Go/internal/auth"
 	"book_store_Go/internal/middleware"
 
 	"book_store_Go/internal/books"
 	"book_store_Go/internal/repository"
+
+	"book_store_Go/internal/profile"
 	"context"
 	"log"
 	"net/http"
@@ -46,6 +49,7 @@ func main() {
 	authHandler := auth.NewAuthHandler(userRepo)
 	catalogHandler := books.NewCatalogHandler(db)
 	readerHandler := books.NewReaderHandler(db)
+	profileHandler := profile.NewProfileHandler(userRepo)
 
 	r := mux.NewRouter()
 
@@ -57,11 +61,18 @@ func main() {
 
 	api.HandleFunc("/me", authHandler.HandleGetMe).Methods("GET")
 
+	
+	api.HandleFunc("/profile", profileHandler.UpdateProfile).Methods("PUT")
+	api.HandleFunc("/profile/password", profileHandler.ChangePassword).Methods("PUT")
+	api.HandleFunc("/profile", profileHandler.DeleteAccount).Methods("DELETE")
+
 	r.HandleFunc("/books", catalogHandler.GetBooks).Methods("GET")
 	r.HandleFunc("/books", catalogHandler.CreateBook).Methods("POST")
 
 	r.HandleFunc("/books/{id}/upload", readerHandler.UploadPDF).Methods("POST")
 	r.HandleFunc("/books/{id}/download", readerHandler.DownloadPDF).Methods("GET")
+	
+	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 
 	// Пример будущего функционала:
 	// api.HandleFunc("/books/premium", bookHandler.GetPremiumBooks).Methods("GET")
