@@ -25,7 +25,7 @@ func NewReaderHandler(db *mongo.Database) *ReaderHandler {
 	}
 }
 
-func (h *ReaderHandler) UploadPDF(w http.ResponseWriter, r *http.Request) {
+func (h *ReaderHandler) UploadBookFile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	bookID, err := primitive.ObjectIDFromHex(vars["id"])
 	if err != nil {
@@ -41,7 +41,15 @@ func (h *ReaderHandler) UploadPDF(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	filename := fmt.Sprintf("book_%s_%d%s", vars["id"], time.Now().Unix(), filepath.Ext(handler.Filename))
+	ext := filepath.Ext(handler.Filename)
+
+	// Проверяем, что мы сохраняем поддерживаемый формат
+	if ext != ".pdf" && ext != ".epub" {
+		http.Error(w, "Unsupported file format. Only PDF and EPUB are allowed.", http.StatusBadRequest)
+		return
+	}
+
+	filename := fmt.Sprintf("book_%s_%d%s", vars["id"], time.Now().Unix(), ext)
 	filePath := filepath.Join("storage", "books", filename)
 
 	dst, err := os.Create(filePath)
@@ -57,6 +65,7 @@ func (h *ReaderHandler) UploadPDF(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filter := bson.M{"_id": bookID}
+	// Обновляем общее поле 'file_path'
 	update := bson.M{"$set": bson.M{"file_path": filePath}}
 
 	_, err = h.Collection.UpdateOne(context.TODO(), filter, update)
@@ -66,24 +75,4 @@ func (h *ReaderHandler) UploadPDF(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte("File uploaded successfully"))
-}
-
-func (h *ReaderHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	bookID, _ := primitive.ObjectIDFromHex(vars["id"])
-
-	var book struct {
-		FilePath string `bson:"file_path"`
-	}
-	err := h.Collection.FindOne(context.TODO(), bson.M{"_id": bookID}).Decode(&book)
-
-	if err != nil || book.FilePath == "" {
-		http.Error(w, "File not found for this book", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Disposition", "inline; filename=book.pdf")
-	w.Header().Set("Content-Type", "application/pdf")
-
-	http.ServeFile(w, r, book.FilePath)
 }

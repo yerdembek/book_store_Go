@@ -49,7 +49,12 @@ func main() {
 	authHandler := auth.NewAuthHandler(userRepo)
 	catalogHandler := books.NewCatalogHandler(db)
 	readerHandler := books.NewReaderHandler(db)
+
+	epubHandler := books.NewEPUBReaderHandler(db)
+	pdfHandler := books.NewPDFReaderHandler(db)
+
 	profileHandler := profile.NewProfileHandler(userRepo)
+
 
 	r := mux.NewRouter()
 
@@ -61,6 +66,7 @@ func main() {
 
 	api.HandleFunc("/me", authHandler.HandleGetMe).Methods("GET")
 
+
 	
 	api.HandleFunc("/profile", profileHandler.UpdateProfile).Methods("PUT")
 	api.HandleFunc("/profile/password", profileHandler.ChangePassword).Methods("PUT")
@@ -69,8 +75,9 @@ func main() {
 	r.HandleFunc("/books", catalogHandler.GetBooks).Methods("GET")
 	r.HandleFunc("/books", catalogHandler.CreateBook).Methods("POST")
 
-	r.HandleFunc("/books/{id}/upload", readerHandler.UploadPDF).Methods("POST")
-	r.HandleFunc("/books/{id}/download", readerHandler.DownloadPDF).Methods("GET")
+	r.HandleFunc("/books/{id}/upload/file", readerHandler.UploadBookFile).Methods("POST")
+	r.HandleFunc("/books/{id}/download/pdf", pdfHandler.DownloadPDF).Methods("GET")
+	r.HandleFunc("/books/{id}/download/epub", epubHandler.DownloadEPUB).Methods("GET")
 	
 	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 
