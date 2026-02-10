@@ -5,9 +5,12 @@ import (
 	"book_store_Go/internal/middleware"
 
 	"book_store_Go/internal/books"
+	"book_store_Go/internal/chat"
 	"book_store_Go/internal/repository"
 
 	"book_store_Go/internal/profile"
+
+	"book_store_Go/internal/subscription"
 	"context"
 	"log"
 	"net/http"
@@ -53,8 +56,15 @@ func main() {
 	pdfHandler := books.NewPDFReaderHandler(db)
 
 	profileHandler := profile.NewProfileHandler(userRepo)
+	subscriptionHandler := subscription.NewSubscriptionHandler(userRepo)
+
+	hub := chat.NewHub()
+	go hub.Run()
+	chatHandler := chat.NewHandler(hub, db)
 
 	r := mux.NewRouter()
+
+	r.HandleFunc("/ws", chatHandler.ServeWS)
 
 	r.HandleFunc("/api/register", authHandler.HandleRegister).Methods("POST")
 	r.HandleFunc("/api/login", authHandler.HandleLogin).Methods("POST")
@@ -67,6 +77,8 @@ func main() {
 	api.HandleFunc("/profile", profileHandler.UpdateProfile).Methods("PUT")
 	api.HandleFunc("/profile/password", profileHandler.ChangePassword).Methods("PUT")
 	api.HandleFunc("/profile", profileHandler.DeleteAccount).Methods("DELETE")
+	//
+	api.HandleFunc("/subscription/upgrade", subscriptionHandler.UpgradeSubscription).Methods("POST")
 
 	r.HandleFunc("/books", catalogHandler.GetBooks).Methods("GET")
 	r.HandleFunc("/books", catalogHandler.CreateBook).Methods("POST")
@@ -74,6 +86,10 @@ func main() {
 	r.HandleFunc("/books/{id}/upload/file", readerHandler.UploadBookFile).Methods("POST")
 	r.HandleFunc("/books/{id}/download/pdf", pdfHandler.DownloadPDF).Methods("GET")
 	r.HandleFunc("/books/{id}/download/epub", epubHandler.DownloadEPUB).Methods("GET")
+
+
+	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
+
 
 	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 	r.HandleFunc("/books/{id}", catalogHandler.DeleteBook).Methods("DELETE")
