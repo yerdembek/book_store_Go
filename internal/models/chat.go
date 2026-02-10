@@ -12,3 +12,5 @@ type Message struct {
 	Content   string             `bson:"content" json:"content"`
 	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
 }
+
+//test
