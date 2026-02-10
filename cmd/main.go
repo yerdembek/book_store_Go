@@ -9,6 +9,8 @@ import (
 	"book_store_Go/internal/repository"
 
 	"book_store_Go/internal/profile"
+
+	"book_store_Go/internal/subscription"
 	"context"
 	"log"
 	"net/http"
@@ -50,6 +52,7 @@ func main() {
 	catalogHandler := books.NewCatalogHandler(db)
 	readerHandler := books.NewReaderHandler(db)
 	profileHandler := profile.NewProfileHandler(userRepo)
+	subscriptionHandler := subscription.NewSubscriptionHandler(userRepo)
 
 	r := mux.NewRouter()
 
@@ -64,6 +67,8 @@ func main() {
 	api.HandleFunc("/profile", profileHandler.UpdateProfile).Methods("PUT")
 	api.HandleFunc("/profile/password", profileHandler.ChangePassword).Methods("PUT")
 	api.HandleFunc("/profile", profileHandler.DeleteAccount).Methods("DELETE")
+	//
+	api.HandleFunc("/subscription/upgrade", subscriptionHandler.UpgradeSubscription).Methods("POST")
 
 	r.HandleFunc("/books", catalogHandler.GetBooks).Methods("GET")
 	r.HandleFunc("/books", catalogHandler.CreateBook).Methods("POST")
