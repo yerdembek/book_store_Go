@@ -1,0 +1,66 @@
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --bg-color: #f3f4f6;
+    --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    min-height: 100vh;
+}
+
+.navbar {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+.navbar-brand {
+    font-weight: 800;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.book-card {
+    border: none;
+    border-radius: 20px;
+    background: white;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s;
+    overflow: hidden;
+    height: 100%;
+}
+.book-card:hover { transform: translateY(-5px); }
+
+.book-cover {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 3rem;
+    position: relative;
+}
+
+.price-badge {
+    position: absolute;
+    top: 15px; right: 15px;
+    background: white;
+    color: #4c1d95;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.btn-primary-custom {
+    background: var(--primary-gradient);
+    border: none;
+    color: white;
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+.btn-primary-custom:hover { opacity: 0.9; color: white; }
