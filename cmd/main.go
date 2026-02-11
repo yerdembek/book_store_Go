@@ -1,6 +1,5 @@
 package main
 
-//test
 import (
 	"book_store_Go/internal/auth"
 	"book_store_Go/internal/middleware"
@@ -61,9 +60,10 @@ func main() {
 
 	hub := chat.NewHub()
 	go hub.Run()
-	chatHandler := chat.NewHandler(hub, db)
+	chatHandler := chat.NewHandler(hub, db, userRepo)
 
 	r := mux.NewRouter()
+	r.Use(middleware.CorsMiddleware)
 
 	r.HandleFunc("/ws", chatHandler.ServeWS)
 
@@ -74,6 +74,8 @@ func main() {
 	api.Use(middleware.AuthMiddleware)
 
 	api.HandleFunc("/me", authHandler.HandleGetMe).Methods("GET")
+
+	api.HandleFunc("/chat/messages/{id}", chatHandler.DeleteMessage).Methods("DELETE")
 
 	api.HandleFunc("/profile", profileHandler.UpdateProfile).Methods("PUT")
 	api.HandleFunc("/profile/password", profileHandler.ChangePassword).Methods("PUT")
@@ -88,8 +90,12 @@ func main() {
 	r.HandleFunc("/books/{id}/download/pdf", pdfHandler.DownloadPDF).Methods("GET")
 	r.HandleFunc("/books/{id}/download/epub", epubHandler.DownloadEPUB).Methods("GET")
 
+
 	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 
+
+	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
+	r.HandleFunc("/books/{id}", catalogHandler.DeleteBook).Methods("DELETE")
 	// Пример будущего функционала:
 	// api.HandleFunc("/books/premium", bookHandler.GetPremiumBooks).Methods("GET")
 
