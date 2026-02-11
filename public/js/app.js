@@ -36,7 +36,7 @@ function updateNavbar(token) {
 
     if (token) {
         nav.innerHTML = `
-            <a href="chat.html" class="btn btn-outline-primary rounded-pill me-2">Чат</a>
+            <a href="test-chat.html" class="btn btn-outline-primary rounded-pill me-2">Чат</a>
             <a href="profile.html" class="btn btn-outline-dark rounded-pill me-2">Профиль</a>
             <button onclick="logout()" class="btn btn-danger rounded-pill">Выйти</button>
         `;
