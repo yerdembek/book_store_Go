@@ -1,6 +1,7 @@
 package subscription
 
 import (
+	"book_store_Go/internal/middleware"
 	"book_store_Go/internal/models"
 	"encoding/json"
 	"net/http"
@@ -20,7 +21,7 @@ func NewSubscriptionHandler(userRepo models.UserRepository) *SubscriptionHandler
 
 // UpgradeSubscription upgrades user's subscription for 30 days.
 func (h *SubscriptionHandler) UpgradeSubscription(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(string)
+	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return

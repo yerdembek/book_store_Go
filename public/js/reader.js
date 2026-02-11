@@ -1,115 +1,71 @@
-const API_URL = "http://localhost:8080";
-const urlParams = new URLSearchParams(window.location.search);
-const bookId = urlParams.get('id');
-const formatFromUrl = urlParams.get('format');
+const API_URL = window.location.origin === "null" ? "http://localhost:8080" : window.location.origin;
 
-const loader = document.getElementById('loader');
-const pageInfo = document.getElementById('page-info');
-const pdfContainer = document.getElementById('pdf-container');
-const epubViewer = document.getElementById('epub-viewer');
+document.addEventListener("DOMContentLoaded", async () => {
+    const params = new URLSearchParams(window.location.search);
+    const bookId = params.get("id");
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    if (!bookId) {
+        window.location.href = "index.html";
+        return;
+    }
 
-if (!bookId) {
-    alert("Книга не указана");
-    window.location.href = 'index.html';
-} else {
-    loadBookData();
-}
+    const loader = document.getElementById("loader");
+    const container = document.getElementById("pdf-container");
 
-async function loadBookData() {
     try {
-        const resp = await fetch(`${API_URL}/books/${bookId}`);
-        const book = await resp.json();
+        const token = localStorage.getItem("token");
+        const headers = token ? { "Authorization": "Bearer " + token } : {};
 
-        // ИГНОРИРУЕМ file_path и смотрим на URL
-        if (formatFromUrl === 'epub') {
-            initEpub();
-        } else if (formatFromUrl === 'pdf') {
-            initPdf();
+        const metaRes = await fetch(`${API_URL}/books/${bookId}`, { headers });
+        if (!metaRes.ok) throw new Error("Не удалось загрузить данные книги");
+
+        const book = await metaRes.json();
+        const titleEl = document.getElementById("book-title-display");
+        if (titleEl) titleEl.innerText = book.title;
+        document.title = book.title;
+
+        const pdfUrl = `${API_URL}/books/${bookId}/download/pdf`;
+        const epubUrl = `${API_URL}/books/${bookId}/download/epub`;
+
+        const pdfHead = await fetch(pdfUrl, { method: "HEAD", headers });
+        if (pdfHead.ok || pdfHead.status === 405) {
+            container.innerHTML = `
+                <iframe src="${pdfUrl}#toolbar=0" type="application/pdf" width="100%" height="100%" style="border: none;">
+                    <p class="text-white text-center mt-5">
+                        Ваш браузер не поддерживает PDF.
+                        <a href="${pdfUrl}" target="_blank" class="text-info">Скачать файл</a>
+                    </p>
+                </iframe>
+            `;
+        } else if (pdfHead.status === 404) {
+            const epubHead = await fetch(epubUrl, { method: "HEAD", headers });
+            if (epubHead.ok || epubHead.status === 405) {
+                container.innerHTML = `
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100 text-white">
+                        <h3 class="mb-3">EPUB доступен для скачивания</h3>
+                        <a href="${epubUrl}" class="btn btn-outline-light" target="_blank">Скачать EPUB</a>
+                    </div>
+                `;
+            } else if (epubHead.status === 404) {
+                throw new Error("Файл книги еще не загружен на сервер.");
+            } else {
+                throw new Error("Ошибка загрузки файла");
+            }
         } else {
-            loader.innerHTML = `<div class='text-danger'>Неизвестный формат из URL: ${formatFromUrl}</div>`;
+            throw new Error("Ошибка загрузки файла");
         }
+
+        loader.style.display = "none";
+        container.style.display = "block";
+
     } catch (err) {
         console.error(err);
-        loader.innerHTML = "<div class='text-danger'>Ошибка загрузки данных книги</div>";
+        loader.innerHTML = `
+            <div class="text-center text-danger mt-5">
+                <h3>Ошибка открытия</h3>
+                <p>${err.message}</p>
+                <a href="index.html" class="btn btn-outline-light btn-sm mt-3">Назад в библиотеку</a>
+            </div>
+        `;
     }
-}
-
-function initEpub() {
-    pdfContainer.style.display = 'none';
-    epubViewer.style.display = 'block';
-    epubViewer.style.background = 'white'; // EPUB лучше читать на белом
-
-    const bookUrl = `${API_URL}/books/${bookId}/download/epub`;
-    const book = ePub(bookUrl);
-    const rendition = book.renderTo("epub-viewer", {
-        width: "100%",
-        height: "100%",
-        flow: "paginated", // Листание страницами
-        manager: "default"
-    });
-
-    rendition.display().then(() => {
-        loader.style.display = 'none';
-    });
-
-    // Навигация
-    document.getElementById('next-btn').onclick = () => rendition.next();
-    document.getElementById('prev-btn').onclick = () => rendition.prev();
-
-    rendition.on("relocated", (location) => {
-        const percent = Math.round(location.start.percentage * 100);
-        pageInfo.textContent = `Прогресс: ${percent}%`;
-    });
-
-    // Зум для EPUB (изменение шрифта)
-    let fontSize = 100;
-    document.getElementById('zoom-in').onclick = () => {
-        fontSize += 10;
-        rendition.themes.fontSize(`${fontSize}%`);
-    };
-    document.getElementById('zoom-out').onclick = () => {
-        fontSize -= 10;
-        rendition.themes.fontSize(`${fontSize}%`);
-    };
-}
-
-function initPdf() {
-    pdfContainer.style.display = 'block';
-    epubViewer.style.display = 'none';
-
-    const canvas = document.getElementById('the-canvas');
-    const ctx = canvas.getContext('2d');
-    const bookUrl = `${API_URL}/books/${bookId}/download/pdf`;
-
-    pdfjsLib.getDocument(bookUrl).promise.then(pdf => {
-        let pageNum = 1;
-        let scale = 1.2;
-
-        function renderPage(num) {
-            pdf.getPage(num).then(page => {
-                const viewport = page.getViewport({ scale });
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                page.render({ canvasContext: ctx, viewport: viewport });
-                pageInfo.textContent = `Стр. ${num} / ${pdf.numPages}`;
-            });
-        }
-
-        renderPage(pageNum);
-
-        document.getElementById('next-btn').onclick = () => {
-            if (pageNum >= pdf.numPages) return;
-            pageNum++; renderPage(pageNum);
-        };
-        document.getElementById('prev-btn').onclick = () => {
-            if (pageNum <= 1) return;
-            pageNum--; renderPage(pageNum);
-        };
-        document.getElementById('zoom-in').onclick = () => { scale += 0.2; renderPage(pageNum); };
-        document.getElementById('zoom-out').onclick = () => { scale -= 0.2; renderPage(pageNum); };
-
-        loader.style.display = 'none';
-    });
-}
+});

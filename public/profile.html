@@ -1,47 +1,77 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Мой профиль | BookStore</title>
+    <title>My Profile</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container">
-        <a class="navbar-brand" href="index.html">Библиотека</a>
-        <div class="ms-auto" id="nav-buttons"></div>
+        <a class="navbar-brand" href="index.html">📚 GoStore</a>
+        <div id="nav-buttons"></div>
     </div>
 </nav>
 
-<div class="container">
+<div class="container mb-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-body text-center p-5">
+        <div class="col-md-5 mb-4">
+            <div class="card shadow border-0 h-100">
+                <div class="card-body text-center p-4">
+                    <h3 id="profile-username" class="fw-bold">Loading...</h3>
+                    <p id="profile-email" class="text-muted mb-4">...</p>
+                    <span id="profile-role" class="badge bg-primary fs-6">User</span>
+
+                    <hr class="my-4">
+                    <h5 class="text-start mb-3">Subscription Plans</h5>
+                    <div class="d-grid gap-2">
+                        <button onclick="upgradeSubscription('reader')" class="btn btn-outline-success">Buy Reader Plan</button>
+                        <button onclick="upgradeSubscription('creator')" class="btn btn-outline-warning">Buy Creator Plan</button>
+                    </div>
+
+                    <hr class="my-4">
+                    <button onclick="deleteAccount()" class="btn btn-outline-danger w-100">Delete Account</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Edit Profile</h5>
+                </div>
+                <div class="card-body">
                     <div class="mb-3">
-                        <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center text-white" style="width: 80px; height: 80px; font-size: 2rem;">
-                            <i class="bi bi-person"></i>
+                        <label class="form-label">Username</label>
+                        <div class="input-group">
+                            <input type="text" id="edit-username" class="form-control">
+                            <button onclick="updateUsername()" class="btn btn-secondary">Update</button>
                         </div>
                     </div>
-                    <h3 id="profile-username" class="fw-bold">Загрузка...</h3>
-                    <p id="profile-email" class="text-muted"></p>
-                    <hr>
-                    <div class="text-start mb-4">
-                        <p><strong>Роль:</strong> <span id="profile-role" class="badge bg-info text-dark">...</span></p>
-                        <p><strong>Подписка:</strong> <span id="profile-sub" class="text-success">Бесплатная</span></p>
+                </div>
+            </div>
+
+            <div class="card shadow border-0">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Security</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Old Password</label>
+                        <input type="password" id="old-pass" class="form-control">
                     </div>
-                    <div class="d-grid gap-2">
-                        <button onclick="alert('Функционал в разработке')" class="btn btn-outline-primary">Редактировать пароль</button>
-                        <button onclick="logout()" class="btn btn-danger">Выйти из аккаунта</button>
+                    <div class="mb-3">
+                        <label class="form-label">New Password</label>
+                        <input type="password" id="new-pass" class="form-control">
                     </div>
+                    <button onclick="changePassword()" class="btn btn-warning w-100">Change Password</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script src="js/app.js"></script>
+<script src="/js/app.js"></script>
 </body>
 </html>
