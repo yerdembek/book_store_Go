@@ -15,6 +15,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (createBookForm) {
         createBookForm.addEventListener("submit", createBookWithFile);
     }
+
+    // File selection handler
+    const fileInput = document.getElementById("book-file");
+    if (fileInput) {
+        fileInput.addEventListener("change", (e) => {
+            const fileInfo = document.getElementById("file-info");
+            const fileName = document.getElementById("file-name");
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                fileName.textContent = `${file.name} (${sizeMB} MB)`;
+                fileInfo.style.display = "block";
+            } else {
+                fileInfo.style.display = "none";
+            }
+        });
+    }
 });
 
 function updateNav() {
@@ -148,15 +165,19 @@ async function createBookWithFile(e) {
     const fileInput = document.getElementById("book-file");
 
     if (fileInput.files.length === 0) {
-        alert("Please select a file!");
+        alert("⚠️ Please select a file!");
         return;
     }
 
     const status = document.getElementById("upload-status");
+    const statusText = document.getElementById("status-text");
     if (status) status.style.display = "block";
 
     try {
-        const res = await fetch(`${API_URL}/books`, {
+        // Step 1: Create book metadata
+        if (statusText) statusText.textContent = "Creating book metadata...";
+        
+        const res = await fetch(`${API_URL}/api/books`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -171,10 +192,13 @@ async function createBookWithFile(e) {
         const bookID = extractInsertedId(result);
         if (!bookID) throw new Error("Missing book id from server");
 
+        // Step 2: Upload file
+        if (statusText) statusText.textContent = "Uploading file...";
+        
         const formData = new FormData();
         formData.append("file", fileInput.files[0]);
 
-        const uploadRes = await fetch(`${API_URL}/books/${bookID}/upload/file`, {
+        const uploadRes = await fetch(`${API_URL}/api/books/${bookID}/upload/file`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -183,24 +207,34 @@ async function createBookWithFile(e) {
         });
 
         if (uploadRes.ok) {
-            alert("Book uploaded successfully!");
-            window.location.reload();
+            if (statusText) statusText.textContent = "✓ Book uploaded successfully!";
+            setTimeout(() => {
+                alert("📚 Book added successfully!");
+                document.getElementById("create-book-form").reset();
+                document.getElementById("file-info").style.display = "none";
+                const modal = bootstrap.Modal.getInstance(document.getElementById("addBookModal"));
+                if (modal) modal.hide();
+                loadBooks();
+            }, 500);
         } else {
-            alert("Book created, but file upload failed.");
+            const errorData = await uploadRes.json().catch(() => ({}));
+            throw new Error(errorData.message || "File upload failed. Book was created but file upload failed.");
         }
 
     } catch (e) {
         console.error(e);
-        alert("Error: " + e.message);
-    } finally {
-        if (status) status.style.display = "none";
+        if (statusText) statusText.textContent = "❌ Upload failed";
+        setTimeout(() => {
+            alert("❌ Error: " + e.message);
+            if (status) status.style.display = "none";
+        }, 500);
     }
 }
 
 async function deleteBook(id) {
     if (!confirm("Delete this book?")) return;
     const token = localStorage.getItem("token");
-    const res = await fetch(`${API_URL}/books/${id}`, {
+    const res = await fetch(`${API_URL}/api/books/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
     });

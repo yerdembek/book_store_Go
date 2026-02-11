@@ -1,62 +1,76 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GoBookStore | Demo</title>
+    <title>GoStore Library</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="index.html">📚 GoStore (Demo)</a>
-        <div id="nav-buttons" class="d-flex gap-2">
-            <!-- Кнопки навигации появятся здесь -->
-        </div>
+        <a class="navbar-brand" href="index.html">📚 GoStore</a>
+        <div id="nav-buttons" class="d-flex align-items-center"></div>
     </div>
 </nav>
 
 <div class="container mt-4">
     <div class="text-center py-5">
-        <h1 class="fw-bold">Библиотека знаний</h1>
-        <p class="text-muted">Чистый фронтенд без бэкенда.</p>
-
-        <button id="add-book-btn" class="btn btn-success rounded-pill px-4 shadow" style="display: none;" data-bs-toggle="modal" data-bs-target="#addBookModal">
-            <i class="bi bi-plus-lg"></i> Добавить книгу
+        <h1 class="fw-bold">Digital Library</h1>
+        <button id="add-book-btn" class="btn btn-success rounded-pill px-4 shadow mt-3" style="display: none;" data-bs-toggle="modal" data-bs-target="#addBookModal">
+            + Add Book
         </button>
     </div>
 
-    <div id="books-container" class="row row-cols-1 row-cols-md-3 g-4">
-        <p class="text-center w-100">Загрузка макетов...</p>
-    </div>
+    <div id="books-container" class="row row-cols-1 row-cols-md-3 g-4"></div>
 </div>
 
-<!-- Модальное окно для создания книги -->
-<div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+<div class="modal fade" id="addBookModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addBookModalLabel">Новая книга</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">New Book</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="create-book-form">
                     <div class="mb-3">
-                        <label for="book-title" class="form-label">Название</label>
-                        <input type="text" id="book-title" class="form-control" required>
+                        <label class="form-label fw-bold">Book Title</label>
+                        <input type="text" id="book-title" class="form-control" placeholder="Enter book title" required>
                     </div>
+
                     <div class="mb-3">
-                        <label for="book-author" class="form-label">Автор</label>
-                        <input type="text" id="book-author" class="form-control" required>
+                        <label class="form-label fw-bold">Author</label>
+                        <input type="text" id="book-author" class="form-control" placeholder="Enter author name" required>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select File (PDF or EPUB)</label>
+                        <div class="input-group">
+                            <input type="file" id="book-file" class="form-control" accept=".pdf,.epub" required>
+                        </div>
+                        <div id="file-info" class="text-success small mt-2" style="display: none;">
+                            📄 <span id="file-name"></span>
+                        </div>
+                    </div>
+
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="book-premium">
-                        <label class="form-check-label" for="book-premium">Premium</label>
+                        <label class="form-check-label fw-bold">Premium Book</label>
                     </div>
-                    <button type="submit" class="btn btn-primary">Создать</button>
+
+                    <div id="upload-status" class="alert alert-info text-center mb-3" role="alert" style="display: none;">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span id="status-text">Uploading...</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 fw-bold">
+                        ✓ Create & Upload Book
+                    </button>
                 </form>
             </div>
         </div>

@@ -83,19 +83,16 @@ func main() {
 	//
 	api.HandleFunc("/subscription/upgrade", subscriptionHandler.UpgradeSubscription).Methods("POST")
 
-	r.HandleFunc("/books", catalogHandler.GetBooks).Methods("GET")
-	r.HandleFunc("/books", catalogHandler.CreateBook).Methods("POST")
+	// Protected book endpoints (require authentication)
+	api.HandleFunc("/books", catalogHandler.CreateBook).Methods("POST")
+	api.HandleFunc("/books/{id}/upload/file", readerHandler.UploadBookFile).Methods("POST")
+	api.HandleFunc("/books/{id}", catalogHandler.DeleteBook).Methods("DELETE")
 
-	r.HandleFunc("/books/{id}/upload/file", readerHandler.UploadBookFile).Methods("POST")
+	// Public book endpoints
+	r.HandleFunc("/books", catalogHandler.GetBooks).Methods("GET")
+	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 	r.HandleFunc("/books/{id}/download/pdf", pdfHandler.DownloadPDF).Methods("GET", "HEAD")
 	r.HandleFunc("/books/{id}/download/epub", epubHandler.DownloadEPUB).Methods("GET", "HEAD")
-
-
-	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
-
-
-	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
-	r.HandleFunc("/books/{id}", catalogHandler.DeleteBook).Methods("DELETE")
 	// Пример будущего функционала:
 	// api.HandleFunc("/books/premium", bookHandler.GetPremiumBooks).Methods("GET")
 

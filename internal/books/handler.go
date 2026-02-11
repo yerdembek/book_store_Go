@@ -6,12 +6,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	//
-	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type CatalogHandler struct {
@@ -83,7 +82,6 @@ func (h *CatalogHandler) DeleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ИСПОЛЬЗУЙТЕ h.Collection вместо h.db.Collection("books")
 	result, err := h.Collection.DeleteOne(r.Context(), bson.M{"_id": objID})
 	if err != nil {
 		http.Error(w, "Ошибка при удалении книги из базы данных", http.StatusInternalServerError)
