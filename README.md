@@ -1,114 +1,341 @@
-#  Book Store API
+# Book Store Platform
 
-## Book Store API Overview
+## Advanced Programming Final Project
+Backend: Go (Golang) + MongoDB
+Frontend: HTML / CSS / JavaScript
 
-Book Store API is a simple backend application written in **Go** and powered by **MongoDB**.  
-This project was created as a learning backend project to understand how REST APIs work.
+## Project Overview
 
-It includes user authentication, book management, and PDF file handling.
+Book Store Platform is a full-stack web application that provides:
 
----
+- Secure user authentication (JWT-based)
 
-## Purpose of the Project
+- Profile management
 
-The main goals of this project are:
+- Book catalog management
 
-- Learn backend development using Go
-- Practice working with MongoDB
-- Implement JWT authentication
-- Understand middleware usage
-- Handle file upload and file serving
+- PDF and EPUB file storage
 
----
+- Real-time chat system (WebSocket)
 
-## Technologies Used
+- Subscription-based premium access control
 
-- Go (Golang)
-- MongoDB
-- net/http
-- JWT (JSON Web Tokens)
-- bcrypt
-- Gorilla Mux
+The system implements a monetization model using subscriptions.
+Users can upgrade their account to unlock premium content and advanced features.
 
----
+## System Architecture
+
+The project follows a layered architecture to separate responsibilities and maintain clean code structure.
 
 ## Project Structure
 
-```text
-.
-├── internal/
-│   ├── auth/          # Registration and login
-│   ├── books/         # Book catalog and PDF reader
-│   ├── middleware/    # JWT authentication middleware
-│   ├── models/        # Data models
-│   ├── repository/    # MongoDB repositories
-│   ├── utils/         # Helper utilities
-│   └── mock/          # Mock repository for testing
-├── storage/
-│   └── books/         # Uploaded PDF files
-└── main.go            # Application entry point
+```
+cmd/
+└── main.go
+
+internal/
+├── auth/
+├── books/
+├── chat/
+├── middleware/
+├── models/
+├── profile/
+├── repository/
+├── subscription/
+└── utils/
+
+public/
+storage/
+Project Documents/
 ```
 
----
+## Layer Responsibilities
 
-## Authentication
+`models`
+Contains data structures and business logic.
 
-Users can register and log in using email and password.  
-Passwords are hashed before being stored in the database.
+`repository`
+Handles MongoDB interactions.
 
-After successful login, the user receives a **JWT token**.  
-This token is required to access protected routes.
+`handlers (auth, books, profile, subscription)`
+Process HTTP requests and responses.
 
----
+`middleware`
+JWT authentication and protected routes.
 
-## Books
+`chat`
+WebSocket real-time messaging system.
 
-The API allows users to:
+`utils`
+JWT generation/validation and email utilities.
 
-- View all books
-- Add new books
 
-Each book contains information such as title, author, description, and price.
+## Authentication System
 
----
+The authentication system provides:
 
-## PDF Reader
+- Password hashing using bcrypt
 
-### Upload PDF
+- JWT token generation (24-hour expiration)
 
-A PDF file can be uploaded for each book.  
-The file is stored on the server in the `storage/books` directory.
+- Protected API endpoints
 
-### Read PDF
+- Role-based access control
 
-Uploaded PDF files can be opened directly in the browser.
+`Endpoints`
 
----
-
-## Middleware
-
-JWT middleware is used to:
-
-- Validate authentication tokens
-- Check token expiration
-- Extract user data from the token
-
-Only authorized users can access protected routes.
-
----
-
+```
+POST /api/register
+POST /api/login
+GET /api/me
+```
 ## User Roles
 
-The project includes basic user roles:
+The system supports the following roles:
 
-- user
-- book_premium
-- group_book_premium
-- admin
+- User
 
----
+- Admin
+
+Admins automatically bypass subscription restrictions.
+
+## Subscription System
+
+The platform implements a subscription-based access model.
+
+Subscription Types
+
+- `none` – default (free user)
+
+- `reader` – access to premium books
+
+- `creator` – access to premium books and chat creation
+
+- `admin` – full access
+
+## Subscription Duration
+
+Subscriptions are valid for 30 days from upgrade.
+
+## Subscription Upgrade Endpoint
+
+`POST /api/subscription/upgrade`
+
+Request example:
+```
+{
+"subscription": "reader"
+}
+```
+
+## Access Control Logic
+
+Each user contains:
+
+- `Subscription`
+
+- `SubExpiresAt`
+
+Helper methods implemented in the User model:
+
+- `IsSubActive()`
+
+- `CanReadPremium()`
+
+- `CanCreateChats()`
+
+Access rules:
+
+| Role    | Premium Books | Create Chats |
+|---------|--------------|--------------|
+| Free    | ❌           | ❌           |
+| Reader  | ✅           | ❌           |
+| Creator | ✅           | ✅           |
+| Admin   | ✅           | ✅           |
+
+
+## Book Management
+
+Features:
+
+- Create book
+
+- Get all books
+
+- Get book by ID
+
+- Upload book file (PDF / EPUB)
+
+- Download PDF
+
+- Download EPUB
+
+Endpoints
+
+`GET /books`
+
+`POST /books`
+
+`GET /books/{id}`
+
+`POST /books/{id}/upload/file`
+
+`GET /books/{id}/download/pdf`
+
+`GET /books/{id}/download/epub`
+
+Supported formats:
+
+- PDF
+
+- EPUB
+
+Files are stored locally in:
+
+`storage/books/`
+
+## Real-Time Chat System
+
+The chat system is implemented using Gorilla WebSocket.
+
+Features:
+
+- Real-time messaging
+
+- Message persistence in MongoDB
+
+- Hub-based broadcast architecture
+
+- Multiple connected clients support
+
+## WebSocket Endpoint
+
+`GET /ws?email=user@example.com`
+
+Messages are stored in the `messages` collection.
+
+## Database Design
+
+The application uses MongoDB with three main collections:
+
+`users`
+
+- email
+
+- username
+
+- password_hash
+
+- role
+
+- subscription
+
+- sub_expires_at
+
+- created_at
+
+`books`
+
+- title
+
+- author
+
+- description
+
+- image_url
+
+- price
+
+- is_premium
+
+- file_path
+
+`messages`
+
+- sender
+
+- content
+
+- created_at
+
+ER, UML and Use Case diagrams are located in:
+
+`Project Documents/`
+
+## Security Features
+
+- bcrypt password hashing
+
+- JWT authentication with expiration
+
+- Protected API routes
+
+- Role-based authorization
+
+- Subscription expiration validation
+
+- Context-based user validation
 
 ## Environment Variables
 
-```env
+The project requires a `.env` file:
+```
+MONGO_URI=your_mongodb_uri
 JWT_SECRET=your_secret_key
+```
+
+## How to Run
+
+1. Install Go
+
+2. Install MongoDB (or use MongoDB Atlas)
+
+3. Create .env file
+
+4. Run:
+`go run cmd/main.go`
+
+
+Server will start at:
+
+`http://localhost:8080`
+
+Frontend files are served from:
+
+`public/`
+
+## Project Documentation
+
+Included in the repository:
+- [x] ER Diagram
+
+- [x] UML Diagram
+
+- [x] Use Case Diagram
+
+- [x] Gantt Plan
+
+- [ ] Previous assignment documentation
+
+## Future Improvements
+
+- Payment gateway integration
+
+- Subscription auto-renewal
+
+- Admin dashboard
+
+- Cloud file storage (AWS / Cloudinary)
+
+- Role-based chat rooms
+
+- Premium chat-only channels
+
+## Authors
+
+DreamTeam:
+- [x] `Abdikasym Nurbakyt`
+- [x] `Marat Danial`
+- [x] `Yerdembek Beknur`
+
+Advanced Programming Final Project

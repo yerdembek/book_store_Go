@@ -2,6 +2,7 @@ package chat
 
 import (
 	"book_store_Go/internal/middleware"
+
 	"book_store_Go/internal/models"
 	"context"
 	"encoding/json"
@@ -43,6 +44,7 @@ func (h *Handler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
+
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return

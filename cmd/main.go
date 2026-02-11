@@ -90,7 +90,9 @@ func main() {
 	r.HandleFunc("/books/{id}/download/pdf", pdfHandler.DownloadPDF).Methods("GET", "HEAD")
 	r.HandleFunc("/books/{id}/download/epub", epubHandler.DownloadEPUB).Methods("GET", "HEAD")
 
+
 	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
+
 
 	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 	r.HandleFunc("/books/{id}", catalogHandler.DeleteBook).Methods("DELETE")
