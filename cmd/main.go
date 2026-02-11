@@ -63,6 +63,7 @@ func main() {
 	chatHandler := chat.NewHandler(hub, db, userRepo)
 
 	r := mux.NewRouter()
+	r.Use(middleware.CorsMiddleware)
 
 	r.HandleFunc("/ws", chatHandler.ServeWS)
 
@@ -88,6 +89,10 @@ func main() {
 	r.HandleFunc("/books/{id}/upload/file", readerHandler.UploadBookFile).Methods("POST")
 	r.HandleFunc("/books/{id}/download/pdf", pdfHandler.DownloadPDF).Methods("GET")
 	r.HandleFunc("/books/{id}/download/epub", epubHandler.DownloadEPUB).Methods("GET")
+
+
+	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
+
 
 	r.HandleFunc("/books/{id}", catalogHandler.GetBookByID).Methods("GET")
 	r.HandleFunc("/books/{id}", catalogHandler.DeleteBook).Methods("DELETE")
