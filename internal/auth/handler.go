@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"book_store_Go/internal/middleware"
 	"book_store_Go/internal/models"
 	"book_store_Go/internal/utils"
 	"encoding/json"
@@ -95,7 +96,7 @@ func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) HandleGetMe(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(string)
+	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
